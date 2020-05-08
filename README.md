@@ -1,2 +1,2 @@
 # DRL-Crazyflie
-Deep reinforcement learning with bitcraze_crazyflie_2.1
+Deep reinforcement learning with bitcraze crazyflie 2.1.

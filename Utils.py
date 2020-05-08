@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import gym
 
+
 def plotLearning(x, scores, epsilons, filename, lines=None):
     fig=plt.figure()
     ax=fig.add_subplot(111, label="1")
