@@ -3,16 +3,18 @@ import numpy as np
 import gym
 from Utils import plotLearning
 import tensorflow as tf
+import gym_airsim.envs
+import gym_airsim
 
 if __name__ == '__main__':
     print(gym.envs.registry.all())
     tf.compat.v1.disable_eager_execution()
-    env_name = 'Acrobot-v1'
+    env_name = 'AirSimEnv-v42'
     env = gym.make(env_name)
     lr = 0.001
     n_games = 500
     agent = Agent(gamma=0.99, epsilon=1.0, lr=lr, input_dims=env.observation_space.shape,
-                  n_actions=env.action_space.n, mem_size=1000000, batch_size=64,
+                  n_actions=env.action_space.n, mem_size=100000, batch_size=64,
                   epsilon_end=0.01, fname=env_name+'.h5')
     scores = []
     eps_history = []
@@ -22,7 +24,7 @@ if __name__ == '__main__':
         score = 0
         observation = env.reset()
         while not done:
-            env.render()
+            # env.render()
             action = agent.choose_action(observation)
             observation_, reward, done, info = env.step(action)
             score += reward
