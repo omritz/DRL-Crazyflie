@@ -95,6 +95,12 @@ class Agent:
 
         self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
 
+    def save_weights(self, checkpoint_name):
+        self.q_eval.save_weights('./checkpoints/'+checkpoint_name)
+
+    def load_weights(self, checkpoint_path):
+        self.q_eval.load_weights(checkpoint_path)
+
     def save_model(self):
         self.q_eval.save(self.model_file)
 

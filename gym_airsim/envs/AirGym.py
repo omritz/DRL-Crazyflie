@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 # global airgym
 airgym = myAirSimClient()
 
-
 class AirSimEnv(gym.Env):
 
     def __init__(self):
@@ -35,9 +34,9 @@ class AirSimEnv(gym.Env):
         self.allLogs = {'reward': [0], 'distance': [self.dis], 'track': [-2], 'action': [1]}
         # print(self.allLogs)
 
-        self._seed()
+        self.seed()
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
@@ -61,7 +60,7 @@ class AirSimEnv(gym.Env):
 
         return r
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
 
         self.addToLog('action', action)
@@ -112,7 +111,7 @@ class AirSimEnv(gym.Env):
             self.allLogs[key] = []
         self.allLogs[key].append(value)
 
-    def _reset(self):
+    def reset(self):
         """
         Resets the state of the environment and returns an initial observation.
 
