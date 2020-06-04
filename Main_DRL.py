@@ -8,10 +8,10 @@ import gym_airsim
 
 if __name__ == '__main__':
     print(gym.envs.registry.all())
-    tf.compat.v1.disable_eager_execution()
+    # tf.compat.v1.disable_eager_execution()
     env_name = 'AirSimEnv-v42'
     env = gym.make(env_name)
-    lr = 0.001
+    lr = 0.0005
     n_games = 500
     agent = Agent(gamma=0.99, epsilon=1.0, lr=lr, input_dims=env.observation_space.shape,
                   n_actions=env.action_space.n, mem_size=100000, batch_size=64,
@@ -27,13 +27,14 @@ if __name__ == '__main__':
             # env.render()
             action = agent.choose_action(observation)
             observation_, reward, done, info = env.step(action)
+
             score += reward
             agent.store_transition(observation, action, reward, observation_, done)
             observation = observation_
             agent.learn()
         eps_history.append(agent.epsilon)
         scores.append(score)
-
+        print(score)
         avg_score = np.mean(scores[-100:])
         print('episode: ', i, 'score %.2f' % score,
               'average_score %.2f' % avg_score,

@@ -3,12 +3,7 @@ import time
 import math
 import cv2
 from pylab import array, arange, uint8
-from PIL import Image
-import eventlet
-from eventlet import Timeout
-import multiprocessing as mp
-# Change the path below to point to the directoy where you installed the AirSim PythonClient
-# sys.path.append('C:/Users/Kjell/Google Drive/MASTER-THESIS/AirSimpy')
+
 # import setup_path
 from airsim.client import *
 
@@ -27,12 +22,12 @@ class myAirSimClient():
         self.client.armDisarm(True)
 
         self.client.takeoffAsync().join()
-        self.client.moveToPositionAsync(initX, initY, initZ, 5).join()
+        # self.client.moveToPositionAsync(initX, initY, initZ, 5).join()
 
-        self.home_pos = self.client.simGetVehiclePose()
-
+        self.home_pos = self.client.simGetVehiclePose().position
+        print(self.home_pos)
         self.home_ori = self.client.simGetGroundTruthKinematics().orientation
-
+        print(self.home_ori)
         self.z = -3
 
     @staticmethod
@@ -73,31 +68,38 @@ class myAirSimClient():
         pitch, roll, yaw = self.getPitchRollYaw()
         vx = math.cos(yaw) * speed
         vy = math.sin(yaw) * speed
-        self.client.moveByVelocityZAsync(vx, vy, self.z, duration, DrivetrainType.ForwardOnly)
+        self.client.moveByVelocityZAsync(vx, vy, self.z, duration, DrivetrainType.ForwardOnly).join()
         start = time.time()
         return start, duration
 
     def yaw_right(self, duration):
-        self.client.rotateByYawRateAsync(30, duration)
+        self.client.rotateByYawRateAsync(30, duration).join()
         start = time.time()
         return start, duration
 
     def yaw_left(self, duration):
-        self.client.rotateByYawRateAsync(-30, duration)
+        self.client.rotateByYawRateAsync(-30, duration).join()
         start = time.time()
         return start, duration
 
+
+    def stop(self):
+        self.client.moveByVelocityAsync(0, 0, 0, 0.1).join()
+        self.client.rotateByYawRateAsync(0, 0.1).join()
+
     def take_action(self, action):
+        # print(self.client.simGetObjectPose(object_name='Cone'))
+        # print(self.client.simGetMeshPositionVertexBuffers())
 
         # check if copter is on level cause sometimes he goes up without a reason
-        x = 0
-        while self.getPosition().z_val < -7.0:
-            self.client.moveToZAsync(-6, 3)
-            time.sleep(1)
-            print(self.getPosition().z_val, "and", x)
-            x = x + 1
-            if x > 10:
-                return True
+        # x = 0
+        # while self.getPosition().z_val < -7.0:
+        #     self.client.moveToZAsync(-3, 3)
+        #     time.sleep(0.2)
+        #     print(self.getPosition().z_val, "and", x)
+        #     x = x + 1
+        #     if x > 10:
+        #         return True
 
         start = time.time()
         duration = 0
@@ -111,9 +113,7 @@ class myAirSimClient():
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
-
-            self.client.moveByVelocityAsync(0, 0, 0, 1)
-            self.client.rotateByYawRateAsync(0, 1)
+            self.stop()
 
         if action == 1:
 
@@ -122,9 +122,7 @@ class myAirSimClient():
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
-
-            self.client.moveByVelocityAsync(0, 0, 0, 1)
-            self.client.rotateByYawRateAsync(0, 1)
+            self.stop()
 
         if action == 2:
 
@@ -133,9 +131,7 @@ class myAirSimClient():
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
-
-            self.client.moveByVelocityAsync(0, 0, 0, 1)
-            self.client.rotateByYawRateAsync(0, 1)
+            self.stop()
 
         return collided
 
@@ -151,10 +147,12 @@ class myAirSimClient():
 
         return ((math.degrees(track) - 180) % 360) - 180
 
+    def get_state_from_sim(self, track, distance, now):
+        print(self.client.getDistanceSensorData(distance_sensor_name = "Distance",
+                                                vehicle_name = "SimpleFlight").distance)
 
-    def get_state_from_sim(self, track):
-        return (self.client.getDistanceSensorData(distance_sensor_name = "Distance", vehicle_name = "SimpleFlight").distance)
-
+        return (now.x_val, now.y_val, track, distance, (self.client.getDistanceSensorData(distance_sensor_name="Distance",
+                                                                    vehicle_name="SimpleFlight").distance))
 
     def AirSim_reset(self):
 
@@ -163,5 +161,17 @@ class myAirSimClient():
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
         time.sleep(1)
-        self.client.moveToZAsync(self.z, 3)
-        time.sleep(3)
+        self.client.moveToZAsync(self.z, 3).join()
+        time.sleep(1)
+
+
+# drone = myAirSimClient()
+# drone.client.moveToPositionAsync(0, 3, drone.z, 5).join()
+# time.sleep(2)
+# print(drone.client.simGetVehiclePose().position)
+# drone.client.moveToPositionAsync(10, 3, drone.z, 5).join()
+# time.sleep(2)
+# print(drone.client.simGetVehiclePose().position)
+# drone.client.moveToPositionAsync(10, 6, drone.z, 5).join()
+# time.sleep(2)
+# print(drone.client.simGetVehiclePose().position)
