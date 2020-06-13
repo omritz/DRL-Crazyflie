@@ -84,8 +84,8 @@ class myAirSimClient():
 
 
     def stop(self):
-        self.client.moveByVelocityAsync(0, 0, 0, 0.1).join()
-        self.client.rotateByYawRateAsync(0, 0.1).join()
+        self.client.moveByVelocityAsync(0, 0, 0, 0.01).join()
+        self.client.rotateByYawRateAsync(0, 0.01).join()
 
     def take_action(self, action):
         # print(self.client.simGetObjectPose(object_name='Cone'))

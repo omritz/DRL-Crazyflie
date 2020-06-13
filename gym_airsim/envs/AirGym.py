@@ -5,15 +5,13 @@ import random
 import gym
 from gym import spaces
 from gym.utils import seeding
-from gym.spaces import Tuple, Box, Discrete, MultiDiscrete, Dict
-from gym.spaces.box import Box
 from gym_airsim.envs.myAirSimClient import *
 from airsim.client import *
 
 logger = logging.getLogger(__name__)
 
 # global airgym
-airgym = myAirSimClient()
+airSimClient = myAirSimClient()
 
 class AirSimEnv(gym.Env):
 
@@ -29,8 +27,8 @@ class AirSimEnv(gym.Env):
 
         self.episodeN = 0
         self.stepN = 0
-        self.dis = np.sqrt(np.power((self.goal[0] - airgym.home_pos.x_val), 2) +
-                      np.power((self.goal[1] - airgym.home_pos.y_val), 2))
+        self.dis = np.sqrt(np.power((self.goal[0] - airSimClient.home_pos.x_val), 2) +
+                           np.power((self.goal[1] - airSimClient.home_pos.y_val), 2))
         self.allLogs = {'reward': [0], 'distance': [self.dis], 'track': [-2], 'action': [1]}
         # print(self.allLogs)
 
@@ -40,7 +38,7 @@ class AirSimEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def computeReward(self, now, track_now, distance):
+    def computeReward(self, now, track_now, distance, real = False):
 
         # test if getPosition works here like that
         # get exact coordinates of the tip
@@ -58,6 +56,8 @@ class AirSimEnv(gym.Env):
         else:
             r = -1 + (distance_before - distance_now)
 
+        if real:
+            pass
         return r
 
     def step(self, action):
@@ -67,11 +67,11 @@ class AirSimEnv(gym.Env):
 
         self.stepN += 1
 
-        collided = airgym.take_action(action)
+        collided = airSimClient.take_action(action)
 
-        now = airgym.getPosition()
+        now = airSimClient.getPosition()
         # print('X % s' % now.x_val)
-        track = airgym.goal_direction(self.goal, now)
+        track = airSimClient.goal_direction(self.goal, now)
         print('track % s' % track)
         distance = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))
         if collided:
@@ -100,7 +100,7 @@ class AirSimEnv(gym.Env):
             done = True
 
         info = {"x_pos": now.x_val, "y_pos": now.y_val}
-        self.state = airgym.get_state_from_sim(track, distance, now)
+        self.state = airSimClient.get_state_from_sim(track, distance, now)
         print(info)
         print('Reward for this action: %s'% reward)
         print('Distance to target: %s' % distance)
@@ -118,14 +118,14 @@ class AirSimEnv(gym.Env):
         # Returns
             observation (object): The initial observation of the space. Initial reward is assumed to be 0.
         """
-        airgym.AirSim_reset()
+        airSimClient.AirSim_reset()
 
         self.stepN = 0
         self.episodeN += 1
         self.allLogs = {'reward': [0], 'distance': [self.dis], 'track': [-2], 'action': [1]}
         index = np.random.randint(0, len(self.goal_list) - 1)
         self.goal = self.goal_list[index]  # global xy coordinates
-        now = airgym.getPosition()
-        track = airgym.goal_direction(self.goal, now)
-        self.state = airgym.get_state_from_sim(track, self.dis, now)
+        now = airSimClient.getPosition()
+        track = airSimClient.goal_direction(self.goal, now)
+        self.state = airSimClient.get_state_from_sim(track, self.dis, now)
         return self.state
