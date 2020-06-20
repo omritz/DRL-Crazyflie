@@ -1,10 +1,6 @@
 import numpy as np
 import time
 import math
-import cv2
-from pylab import array, arange, uint8
-
-# import setup_path
 from airsim.client import *
 
 
@@ -88,46 +84,25 @@ class myAirSimClient():
         self.client.rotateByYawRateAsync(0, 0.01).join()
 
     def take_action(self, action):
-        # print(self.client.simGetObjectPose(object_name='Cone'))
-        # print(self.client.simGetMeshPositionVertexBuffers())
-
-        # check if copter is on level cause sometimes he goes up without a reason
-        # x = 0
-        # while self.getPosition().z_val < -7.0:
-        #     self.client.moveToZAsync(-3, 3)
-        #     time.sleep(0.2)
-        #     print(self.getPosition().z_val, "and", x)
-        #     x = x + 1
-        #     if x > 10:
-        #         return True
-
         start = time.time()
         duration = 0
-
         collided = False
-
         if action == 0:
-
             start, duration = self.straight(1, 4)
-
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
             self.stop()
 
         if action == 1:
-
             start, duration = self.yaw_right(0.8)
-
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
             self.stop()
 
         if action == 2:
-
             start, duration = self.yaw_left(1)
-
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
@@ -136,23 +111,20 @@ class myAirSimClient():
         return collided
 
     def goal_direction(self, goal, pos):
-
         pitch, roll, yaw = self.getPitchRollYaw()
         yaw = math.degrees(yaw)
-
         pos_angle = math.atan2(goal[1] - pos.y_val, goal[0] - pos.x_val)
         pos_angle = math.degrees(pos_angle) % 360
-
         track = math.radians(pos_angle - yaw)
 
         return ((math.degrees(track) - 180) % 360) - 180
 
     def get_state_from_sim(self, track, distance, now):
-        print(self.client.getDistanceSensorData(distance_sensor_name = "Distance",
-                                                vehicle_name = "SimpleFlight").distance)
+        front_dis_sensor = self.client.getDistanceSensorData(distance_sensor_name="Distance",
+                                                             vehicle_name="SimpleFlight").distance
+        print('front dis sensor: %s' % front_dis_sensor)
 
-        return (now.x_val, now.y_val, track, distance, (self.client.getDistanceSensorData(distance_sensor_name="Distance",
-                                                                    vehicle_name="SimpleFlight").distance))
+        return now.x_val, now.y_val, track, distance, front_dis_sensor
 
     def AirSim_reset(self):
 
@@ -164,14 +136,3 @@ class myAirSimClient():
         self.client.moveToZAsync(self.z, 3).join()
         time.sleep(1)
 
-
-# drone = myAirSimClient()
-# drone.client.moveToPositionAsync(0, 3, drone.z, 5).join()
-# time.sleep(2)
-# print(drone.client.simGetVehiclePose().position)
-# drone.client.moveToPositionAsync(10, 3, drone.z, 5).join()
-# time.sleep(2)
-# print(drone.client.simGetVehiclePose().position)
-# drone.client.moveToPositionAsync(10, 6, drone.z, 5).join()
-# time.sleep(2)
-# print(drone.client.simGetVehiclePose().position)

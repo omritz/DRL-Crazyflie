@@ -1,7 +1,3 @@
-import logging
-import numpy as np
-import random
-
 import gym
 from gym import spaces
 from gym.utils import seeding
@@ -10,13 +6,12 @@ from airsim.client import *
 
 logger = logging.getLogger(__name__)
 
-# global airgym
 airSimClient = myAirSimClient()
 
 class AirSimEnv(gym.Env):
 
     def __init__(self):
-        # left depth, center depth, right depth, yaw
+        # x_pos, y_pos, direction to goal, distance to goal, distance_sensor.front
         self.observation_space = spaces.Box(low=-500, high=500, shape=(5,))
         self.state = np.zeros((5,), dtype=np.uint8)
 
@@ -38,19 +33,13 @@ class AirSimEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def computeReward(self, now, track_now, distance, real = False):
-
-        # test if getPosition works here like that
-        # get exact coordinates of the tip
+    def computeReward(self, now, track_now, distance, real=False):
 
         distance_now = distance
         distance_before = self.allLogs['distance'][-1]
 
         r = 0
 
-        # if abs(distance_now - distance_before) < 0.0001:
-        #     r = r - 2.0
-        # Check if last 4 positions are the same. Is the copter actually moving?
         if self.stepN > 5 and len(set(self.allLogs['distance'][len(self.allLogs['distance']):len(self.allLogs['distance'])-5:-1])) == 1:
             r = r - 100
         else:
@@ -73,7 +62,7 @@ class AirSimEnv(gym.Env):
         # print('X % s' % now.x_val)
         track = airSimClient.goal_direction(self.goal, now)
         print('track % s' % track)
-        distance = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))
+        self.dis = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))
         if collided:
             done = True
             reward = -100.0
@@ -82,16 +71,16 @@ class AirSimEnv(gym.Env):
             reward = 0.0
         else:
             done = False
-            reward = self.computeReward(now, track, distance)
+            reward = self.computeReward(now, track, self.dis)
 
         # You made it
-        if distance < 1:
+        if self.dis < 1:
             done = True
             reward = 100.0
 
         self.addToLog('reward', reward)
         rewardSum = np.sum(self.allLogs['reward'])
-        self.addToLog('distance', distance)
+        self.addToLog('distance', self.dis)
         self.addToLog('track', track)
 
         # Terminate the episode on large cumulative amount penalties,
@@ -100,10 +89,10 @@ class AirSimEnv(gym.Env):
             done = True
 
         info = {"x_pos": now.x_val, "y_pos": now.y_val}
-        self.state = airSimClient.get_state_from_sim(track, distance, now)
+        self.state = airSimClient.get_state_from_sim(track, self.dis, now)
         print(info)
         print('Reward for this action: %s'% reward)
-        print('Distance to target: %s' % distance)
+        print('Distance to target: %s' % self.dis)
         return self.state, reward, done, info
 
     def addToLog(self, key, value):
@@ -127,5 +116,6 @@ class AirSimEnv(gym.Env):
         self.goal = self.goal_list[index]  # global xy coordinates
         now = airSimClient.getPosition()
         track = airSimClient.goal_direction(self.goal, now)
+        self.dis = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))
         self.state = airSimClient.get_state_from_sim(track, self.dis, now)
         return self.state
