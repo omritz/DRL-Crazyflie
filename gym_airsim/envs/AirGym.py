@@ -33,7 +33,7 @@ class AirSimEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def computeReward(self, now, track_now, distance, real=False):
+    def computeReward(self, now, track_now, distance):
 
         distance_now = distance
         distance_before = self.allLogs['distance'][-1]
@@ -45,8 +45,6 @@ class AirSimEnv(gym.Env):
         else:
             r = -1 + (distance_before - distance_now)
 
-        if real:
-            pass
         return r
 
     def step(self, action):
