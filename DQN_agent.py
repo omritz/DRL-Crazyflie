@@ -83,14 +83,9 @@ class Agent:
         states, actions, rewards, states_, dones = self.memory.sample_buffer(self.batch_size)
         q_eval = self.q_eval.predict(states)
         q_next = self.q_eval.predict(states_)
-        # print("q_eval:", q_eval, "q_next:", q_next)
         q_target = np.copy(q_eval)
         batch_index = np.arange(self.batch_size, dtype=np.int32)
-        # print("batch_index:", batch_index, "actions:", actions)
-        # print(q_target)
-        # print(q_target[batch_index, actions])
         q_target[batch_index, actions] = rewards + self.gamma * np.max(q_next, axis=1)*dones
-        # print('qtargt', q_target)
         self.q_eval.train_on_batch(states, q_target)
 
         self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
