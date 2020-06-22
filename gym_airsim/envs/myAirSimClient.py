@@ -123,7 +123,8 @@ class myAirSimClient():
         front_dis_sensor = self.client.getDistanceSensorData(distance_sensor_name="Distance",
                                                              vehicle_name="SimpleFlight").distance
         print('front dis sensor: %s' % front_dis_sensor)
-
+        if front_dis_sensor > 4:
+            front_dis_sensor = 3.8 + 0.4 * np.random.random(1)
         return now.x_val, now.y_val, track, distance, front_dis_sensor
 
     def AirSim_reset(self):
