@@ -1,7 +1,10 @@
+# !/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import numpy as np
 from tensorflow.keras.models import load_model
 import tensorflow as tf
 import myCrazyFlieClient
+import time
 
 
 def choose_action(observation):
@@ -15,12 +18,21 @@ def choose_action(observation):
 
 if __name__ == '__main__':
     tf.compat.v1.disable_eager_execution()
-    goal = [5, 5]
-    model = load_model('models/AirSimEnv-v42-210Ep.h5')
+    goal = [0, 2]
+    model = load_model('models/AirSimEnv-v42-500Ep.h5')
     client = myCrazyFlieClient.MyCrazyFlieClient()
-    while True:
-        state = client.observe(goal)
-        action = choose_action(state)
-        print('action: %s' % action)
-        client.take_action(action)
+    done = False
+    try:
+        while not done:
+            state = client.observe(goal)
+            action = choose_action(state)
+            client.take_action(action)
+            done = client.check_if_in_target(goal)
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print('dsadfsdfsdfsdfdsfdsf')
+        client.land()
+
+
+
 
