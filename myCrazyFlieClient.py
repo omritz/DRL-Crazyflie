@@ -36,14 +36,22 @@ class MyCrazyFlieClient:
         log_config_2.add_variable('stabilizer.yaw', 'float')
         self.logger_orientation = SyncLogger(self.scf, log_config_2)
         self.home_pos = self.get_position()
+        print('Home = %s ' % self.home_pos)
         self.orientation = self.get_orientation()
-        print(self.home_pos)
-        print(self.orientation)
         self.client = MotionCommander(self.scf)
-        self.client.take_off()
+        self.client.take_off(height=0.6)
 
     def land(self):
         self.client.land()
+        self.scf.close_link()
+
+    def check_if_in_target(self, goal):
+        pos = self.get_position()
+        distance = np.sqrt(np.power((goal[0] - pos[0]), 2) + np.power((goal[1] - pos[1]), 2))
+        if distance < 1:
+            self.land()
+            return True
+        return False
 
     def get_position(self):
         self.logger_pos.connect()
@@ -60,7 +68,7 @@ class MyCrazyFlieClient:
         return data['stabilizer.yaw']
 
     def straight(self, speed):
-        self.client.forward(1, speed)
+        self.client.forward(0.25, speed)
         start = time.time()
         return start
 
@@ -81,7 +89,7 @@ class MyCrazyFlieClient:
         collided = False
 
         if action == 0:
-            start = self.straight(4)
+            start = self.straight(0.25)
 
         if action == 1:
             start = self.yaw_right()
@@ -108,8 +116,11 @@ class MyCrazyFlieClient:
         while front_distance_sensor is None:
             time.sleep(0.01)
             front_distance_sensor = distance_sensor.front
-            print('Front distance: %s' % front_distance_sensor)
         distance_sensor.stop()
+        print('Position now = %s ' % position_now)
+        print('Track = %s ' % track)
+        print('Distance to target: %s' % distance)
+        print('Front distance: %s' % front_distance_sensor)
         return position_now[0], position_now[1], track, distance, front_distance_sensor
 
 
