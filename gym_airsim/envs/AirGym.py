@@ -3,7 +3,7 @@ from gym import spaces
 from gym.utils import seeding
 from gym_airsim.envs.myAirSimClient import *
 from airsim.client import *
-
+import random
 logger = logging.getLogger(__name__)
 
 airSimClient = myAirSimClient()
@@ -16,10 +16,12 @@ class AirSimEnv(gym.Env):
         self.state = np.zeros((5,), dtype=np.uint8)
 
         self.action_space = spaces.Discrete(3)
-        self.goal_list = [[9.0, -5.0], [10.0, 6.0], [9.0, 0.0]]
-        index = np.random.randint(0, len(self.goal_list) - 1)
-        self.goal = self.goal_list[index]  # global xy coordinates
-
+        # self.obstacle_list = [[0.0, -7.0], [0.0, 5.0], [10.0, -7.0], [10.0, -1.0], [10.0, 5.0], [5, -3.0], [5.0, 3.0]]
+        # index = np.random.randint(0, len(self.goal_list) - 1)
+        # self.goal = self.goal_list[index]  # global xy coordinates
+        self.x_goal = random.uniform(-3, 17)
+        self.y_goal = random.uniform(-11, 9)
+        self.goal = [self.x_goal, self.y_goal]
         self.episodeN = 0
         self.stepN = 0
         self.dis = np.sqrt(np.power((self.goal[0] - airSimClient.home_pos.x_val), 2) +
@@ -110,8 +112,13 @@ class AirSimEnv(gym.Env):
         self.stepN = 0
         self.episodeN += 1
         self.allLogs = {'reward': [0], 'distance': [self.dis], 'track': [-2], 'action': [1]}
-        index = np.random.randint(0, len(self.goal_list) - 1)
-        self.goal = self.goal_list[index]  # global xy coordinates
+        # index = np.random.randint(0, len(self.goal_list) - 1)
+        # self.goal = self.goal_list[index]  # global xy coordinates
+        # self.goal = [0.0, 4.0]
+        self.x_goal = random.uniform(-3, 17)
+        self.y_goal = random.uniform(-11, 9)
+        self.goal = [self.x_goal, self.y_goal]
+        print('Goal = %s' % self.goal)
         now = airSimClient.getPosition()
         track = airSimClient.goal_direction(self.goal, now)
         self.dis = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))

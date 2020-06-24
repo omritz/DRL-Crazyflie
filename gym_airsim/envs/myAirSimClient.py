@@ -24,7 +24,7 @@ class myAirSimClient():
         print(self.home_pos)
         self.home_ori = self.client.simGetGroundTruthKinematics().orientation
         print(self.home_ori)
-        self.z = -3
+        self.z = -2
 
     @staticmethod
     def toEulerianAngle(q):
@@ -88,7 +88,7 @@ class myAirSimClient():
         duration = 0
         collided = False
         if action == 0:
-            start, duration = self.straight(1, 4)
+            start, duration = self.straight(1, 0.5)
             while duration > time.time() - start:
                 if self.client.simGetCollisionInfo().has_collided:
                     return True
@@ -125,6 +125,10 @@ class myAirSimClient():
         print('front dis sensor: %s' % front_dis_sensor)
         if front_dis_sensor > 4:
             front_dis_sensor = 3.8 + 0.4 * np.random.random(1)
+        print('Position now = %s ' % now)
+        print('Track = %s ' % track)
+        print('Distance to target: %s' % distance)
+        print('Front distance: %s' % front_dis_sensor)
         return now.x_val, now.y_val, track, distance, front_dis_sensor
 
     def AirSim_reset(self):

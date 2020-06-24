@@ -11,14 +11,14 @@ if __name__ == '__main__':
     env_name = 'AirSimEnv-v42'
     env = gym.make(env_name)
     lr = 0.0005
-    n_games = 300
+    n_games = 1000
     agent = Agent(gamma=0.99, epsilon=1.0, lr=lr, input_dims=env.observation_space.shape,
                   n_actions=env.action_space.n, mem_size=100000, batch_size=64,
                   epsilon_end=0.01, fname=env_name+'.h5')
     scores = []
     eps_history = []
-    latest = tf.train.latest_checkpoint('checkpoints')
-    agent.load_weights(latest)
+    # latest = tf.train.latest_checkpoint('checkpoints')
+    # agent.load_weights(latest)
     for i in range(n_games):
         done = False
         score = 0
