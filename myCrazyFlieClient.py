@@ -58,14 +58,14 @@ class MyCrazyFlieClient:
         data = self.logger_pos.next()[1]
         self.logger_pos.disconnect()
         self.logger_pos._queue.empty()
-        return [data['kalman.stateX'], data['kalman.stateY']]
+        return [data['kalman.stateX'], -data['kalman.stateY']]
 
     def get_orientation(self):
         self.logger_orientation.connect()
         data = self.logger_orientation.next()[1]
         self.logger_orientation.disconnect()
         self.logger_orientation._queue.empty()
-        return data['stabilizer.yaw']
+        return -data['stabilizer.yaw']
 
     def straight(self, speed):
         self.client.forward(0.25, speed)
@@ -101,10 +101,15 @@ class MyCrazyFlieClient:
 
     def goal_direction(self, goal, pos):
         yaw = self.get_orientation()
+        print('yaw now %s' % yaw)
         pos_angle = math.atan2(goal[1] - pos[1], goal[0] - pos[0])
+
         pos_angle = math.degrees(pos_angle) % 360
-        track = math.radians(pos_angle - yaw)
-        return ((math.degrees(track) - 180) % 360) - 180
+        print('pos angle %s' % pos_angle)
+        track = pos_angle - yaw
+        track = ((track - 180) % 360) - 180
+        print('Track = %s ' % track)
+        return track
 
     def observe(self, goal):
         position_now = self.get_position()
@@ -118,7 +123,7 @@ class MyCrazyFlieClient:
             front_distance_sensor = distance_sensor.front
         distance_sensor.stop()
         print('Position now = %s ' % position_now)
-        print('Track = %s ' % track)
+        # print('Track = %s ' % track)
         print('Distance to target: %s' % distance)
         print('Front distance: %s' % front_distance_sensor)
         return position_now[0], position_now[1], track, distance, front_distance_sensor

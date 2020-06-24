@@ -18,8 +18,8 @@ def choose_action(observation):
 
 if __name__ == '__main__':
     tf.compat.v1.disable_eager_execution()
-    goal = [0, 2]
-    model = load_model('models/AirSimEnv-v42-500Ep.h5')
+    goal = [2.1, -2.1]
+    model = load_model('models/1000 episodes.h5')
     client = myCrazyFlieClient.MyCrazyFlieClient()
     done = False
     try:
@@ -28,7 +28,7 @@ if __name__ == '__main__':
             action = choose_action(state)
             client.take_action(action)
             done = client.check_if_in_target(goal)
-            time.sleep(0.5)
+            time.sleep(0.1)
     except KeyboardInterrupt:
         print('dsadfsdfsdfsdfdsfdsf')
         client.land()
