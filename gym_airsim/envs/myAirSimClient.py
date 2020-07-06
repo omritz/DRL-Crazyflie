@@ -129,7 +129,10 @@ class myAirSimClient():
         print('Track = %s ' % track)
         print('Distance to target: %s' % distance)
         print('Front distance: %s' % front_dis_sensor)
-        return now.x_val, now.y_val, track, distance, front_dis_sensor
+        if isinstance(front_dis_sensor, float):
+            return now.x_val, now.y_val, track, distance, front_dis_sensor
+        else:
+            return now.x_val, now.y_val, track, distance, front_dis_sensor[0]
 
     def AirSim_reset(self):
 

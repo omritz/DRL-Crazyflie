@@ -99,5 +99,5 @@ class Agent:
     def save_model(self):
         self.q_eval.save(self.model_file)
 
-    def load_model(self):
-        self.q_eval = load_model(self.model_file)
+    def load_model(self, model_name):
+        self.q_eval = load_model(model_name)
