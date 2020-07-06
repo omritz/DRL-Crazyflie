@@ -11,7 +11,7 @@ if __name__ == '__main__':
     env_name = 'AirSimEnv-v42'
     env = gym.make(env_name)
     lr = 0.0005
-    n_games = 10000
+    n_games = 5000
     agent = Agent(gamma=0.99, epsilon=1.0, lr=lr, input_dims=env.observation_space.shape,
                   n_actions=env.action_space.n, mem_size=100000, batch_size=64,
                   epsilon_end=0.01, fname=env_name+'.h5')
@@ -41,4 +41,4 @@ if __name__ == '__main__':
     agent.save_model()
     filename = env_name + '.png'
     x = [i+1 for i in range(n_games)]
-    plotLearning(x, scores, eps_history, '10000-episode')
+    plotLearning(x, scores, eps_history, '5000-episode_r_-50')

@@ -65,7 +65,7 @@ class AirSimEnv(gym.Env):
         self.dis = np.sqrt(np.power((self.goal[0] - now.x_val), 2) + np.power((self.goal[1] - now.y_val), 2))
         if collided:
             done = True
-            reward = -100.0
+            reward = -50.0
         elif collided == 99:
             done = True
             reward = 0.0
