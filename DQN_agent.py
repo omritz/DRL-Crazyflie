@@ -40,6 +40,7 @@ class ReplayBuffer:
 
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     model = keras.Sequential([
+        keras.Input(shape=input_dims),
         keras.layers.Dense(fc1_dims, activation='relu'),
         keras.layers.Dense(fc2_dims, activation='relu'),
         keras.layers.Dense(n_actions, activation=None)])
@@ -50,7 +51,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 class Agent:
     def __init__(self, lr, gamma, n_actions, epsilon, batch_size,
-                 input_dims, epsilon_dec=1e-3, epsilon_end=0.01,
+                 input_dims, epsilon_dec=1e-3, epsilon_end=0.1,
                  mem_size=1000000, fname='dqn_model.h5'):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
@@ -61,6 +62,9 @@ class Agent:
         self.model_file = fname
         self.memory = ReplayBuffer(mem_size, input_dims)
         self.q_eval = build_dqn(lr, n_actions, input_dims, 128, 128)
+        self.target_net = build_dqn(lr, n_actions, input_dims, 128, 128)
+        self.target_net.set_weights(self.q_eval.get_weights())
+
 
     def store_transition(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
@@ -71,10 +75,15 @@ class Agent:
         else:
             state = np.array([observation])
             actions = self.q_eval.predict(state)
-
             action = np.argmax(actions)
 
         return action
+
+    def soft_update(self, tau):
+        policy_net_variables = self.q_eval.variables
+        target_net_variables = self.target_net.variables
+        for policy_net_variable, target_net_variable in zip(policy_net_variables, target_net_variables):
+            target_net_variable.assign(tau*policy_net_variable + (1-tau)*target_net_variable)
 
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
@@ -82,22 +91,25 @@ class Agent:
 
         states, actions, rewards, states_, dones = self.memory.sample_buffer(self.batch_size)
         q_eval = self.q_eval.predict(states)
-        q_next = self.q_eval.predict(states_)
+        q_next = self.target_net.predict(states_)
         q_target = np.copy(q_eval)
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         q_target[batch_index, actions] = rewards + self.gamma * np.max(q_next, axis=1)*dones
         self.q_eval.train_on_batch(states, q_target)
+        self.soft_update(0.01)
 
-        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
+        # self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
 
     def save_weights(self, checkpoint_name):
+        print('Saving Weights.....')
         self.q_eval.save_weights('./checkpoints/'+checkpoint_name)
 
     def load_weights(self, checkpoint_path):
         self.q_eval.load_weights(checkpoint_path)
 
-    def save_model(self):
-        self.q_eval.save(self.model_file)
+    def save_model(self, episode):
+        print('Saving Model.....')
+        self.q_eval.save('./models/' + str(episode) + self.model_file)
 
     def load_model(self, model_name):
         self.q_eval = load_model(model_name)
