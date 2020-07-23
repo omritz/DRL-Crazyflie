@@ -85,6 +85,9 @@ class Agent:
         for policy_net_variable, target_net_variable in zip(policy_net_variables, target_net_variables):
             target_net_variable.assign(tau*policy_net_variable + (1-tau)*target_net_variable)
 
+    def hard_update(self):
+        self.target_net.set_weights(self.q_eval.get_weights())
+
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
             return
@@ -96,7 +99,7 @@ class Agent:
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         q_target[batch_index, actions] = rewards + self.gamma * np.max(q_next, axis=1)*dones
         self.q_eval.train_on_batch(states, q_target)
-        self.soft_update(0.01)
+        # self.soft_update(0.01)
 
         # self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
 
