@@ -139,8 +139,7 @@ class myAirSimClient():
         self.client.reset()
         time.sleep(0.2)
         self.client.enableApiControl(True)
-        self.client.armDisarm(True)
-        time.sleep(1)
+        time.sleep(0.2)
         self.client.moveToZAsync(self.z, 3).join()
-        time.sleep(1)
+        time.sleep(0.2)
 
