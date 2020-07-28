@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
+import json
 
 
 class ReplayBuffer:
@@ -36,6 +37,26 @@ class ReplayBuffer:
         terminal = self.terminal_memory[batch]
 
         return states, actions, rewards, states_, terminal
+
+    def save_memory(self):
+        data = {'states': self.state_memory.tolist(),
+                'states_:': self.new_state_memory.tolist(),
+                'rewards': self.reward_memory.tolist(),
+                'actions': self.action_memory.tolist(),
+                'terminal': self.terminal_memory.tolist()
+                }
+        with open('buffer.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def load_memory(self):
+        with open('buffer.json') as json_data:
+            data = json.load(json_data)
+        self.state_memory = data['states']
+        self.new_state_memory = data['states_']
+        self.reward_memory = data['rewards']
+        self.action_memory = data['actions']
+        self.terminal_memory = data['terminal']
+
 
 
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):

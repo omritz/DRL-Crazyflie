@@ -54,6 +54,7 @@ def plot_dones(done_array, game):
 
 
 def plot_learning(scores, epsilons):
+    sns.set(style="white")
     fig, ax = plt.subplots()
     ax1 = ax.twinx()
     x = [i+1 for i in range(len(scores))]
@@ -92,19 +93,19 @@ if __name__ == '__main__':
     env = gym.make(env_name)
     lr = 0.0005
     n_games = 3000
-    agent = Agent(gamma=0.99, epsilon=0.746, lr=lr, input_dims=env.observation_space.shape,
+    agent = Agent(gamma=0.99, epsilon=1.1, lr=lr, input_dims=env.observation_space.shape,
                   n_actions=env.action_space.n, mem_size=100000, batch_size=64,
-                  epsilon_end=0.01, fname='_New_R_target.h5')
-    # scores = []
-    # eps_history = []
-    # dones = []
-    with open('data.json') as json_data:
-        data = json.load(json_data)
-    # data = {'eps_history': [], 'scores': [], 'dones': []}
-    print(data)
-    scores = data['scores']
-    eps_history = data['eps_history']
-    dones = data['dones']
+                  epsilon_dec=0.95, epsilon_end=0.01, fname='_New_R_target.h5')
+    scores = []
+    eps_history = []
+    dones = []
+    data = {'eps_history': [], 'scores': [], 'dones': []}
+    # with open('data.json') as json_data:
+    #     data = json.load(json_data)
+    # print(data)
+    # scores = data['scores']
+    # eps_history = data['eps_history']
+    # dones = data['dones']
     '''---------------------------------------evaluate main------------------------------------------'''
     #
     # model = load_model('models/AirSimEnv-v42_10000Ep.h5')
@@ -140,11 +141,14 @@ if __name__ == '__main__':
     # print('Success rate is: %s' % ((dones/n_games)*100))
     '''-------------------------------Training main--------------------------------------------'''
     #
-    latest = tf.train.latest_checkpoint('checkpoints')
-    print(latest)
-    agent.load_weights(latest)
-    for i in range(254, n_games, 1):
-        agent.epsilon = agent.epsilon - agent.eps_dec if agent.epsilon > agent.eps_min else agent.eps_min
+    # latest = tf.train.latest_checkpoint('checkpoints')
+    # print(latest)
+    # agent.load_weights(latest)
+    # model = load_model('models/500_New_R_target.h5')
+    # agent.q_eval = model
+    # agent.target_net = model
+    for i in range(n_games):
+        agent.epsilon = max(agent.epsilon*agent.eps_dec, agent.eps_min)
         done = False
         score = 0
         observation = env.reset()
@@ -172,6 +176,7 @@ if __name__ == '__main__':
               'epsilon %.2f' % agent.epsilon)
         # agent.save_weights('ckpt_New_R_target_net')
         if i % 50 == 0:
+            agent.memory.save_memory()
             agent.save_weights(str(i) + '_episodes_New_R_target')
             agent.save_model(str(i))
             plot_learning(scores, eps_history)
