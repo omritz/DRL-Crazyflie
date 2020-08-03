@@ -30,7 +30,6 @@ if __name__ == '__main__':
             done = client.check_if_in_target(goal)
             time.sleep(0.1)
     except KeyboardInterrupt:
-        print('dsadfsdfsdfsdfdsfdsf')
         client.land()
 
 
