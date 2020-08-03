@@ -11,3 +11,5 @@ In this project we implement a DQN algorithem for goal seeking in nano drone fro
     - to reduce the correlations between consecutive updates
 3. Network for Q-learning targets are fixed for intervals
     - to reduce the correlations between target and predicted Q-values
+    
+![DRL-Crazyflie](docs/DQN_flow_chart.jpeg)
