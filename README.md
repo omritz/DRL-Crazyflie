@@ -4,8 +4,8 @@ Deep reinforcement learning with bitcraze crazyflie 2.1.
 ![DRL-Crazyflie](docs/methodology.jpeg)
 
 This repository contains the following parts:
-  - Training: in the [main_DRL](https://github.com/omritz/DRL-Crazyflie/main_DRL.py) you will find the code for training and evaluate your model.
-  - Testing: for testing your trained policy go to [main_DRL](https://github.com/omritz/DRL-Crazyflie/main_crazyflie.py) and choose your model.
+  - Training: in the [main_DRL](main_DRL.py) you will find the code for training and evaluate your model.
+  - Testing: for testing your trained policy go to [main_crazyflie](main_crazyflie.py) and choose your model.
 
 ## Project details:
 In this project we implement a DQN algorithem for goal seeking in nano drone from [Bitcraze](https://www.bitcraze.io).
